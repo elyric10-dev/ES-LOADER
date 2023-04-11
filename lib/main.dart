@@ -5,6 +5,8 @@ void main() {
   runApp(MyApp());
 }
 
+const OWNER = "ES-Loader";
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -29,11 +31,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('ES-Loader'),
-      ),
-      body: HomePage(),
-    );
+    return HomePage();
   }
 }
