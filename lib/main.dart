@@ -1,7 +1,11 @@
-import 'package:es_loader/pages/homepage.dart';
+import 'package:es_loader/pages/homepage/homepage.dart';
+import 'package:es_loader/pages/initialPage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
   runApp(MyApp());
 }
 

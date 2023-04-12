@@ -3,11 +3,11 @@ import "package:flutter/material.dart";
 import 'package:ussd_advanced/ussd_advanced.dart';
 import 'package:es_loader/dialNumbers/dialNumbers.dart';
 
-class HomePage extends StatefulWidget {
-  HomePage({super.key});
+class InitialPage extends StatefulWidget {
+  InitialPage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<InitialPage> createState() => _InitialPageState();
 }
 
 final TextEditingController _mobileNumberController = TextEditingController();
@@ -19,7 +19,7 @@ String? responseMessage;
 bool _isLoading = false;
 bool _isDone = false;
 
-class _HomePageState extends State<HomePage> {
+class _InitialPageState extends State<InitialPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
