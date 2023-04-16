@@ -1,4 +1,5 @@
 import 'package:es_loader/main.dart';
+import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:ussd_advanced/ussd_advanced.dart';
 import 'package:es_loader/dialNumbers/dialNumbers.dart';
@@ -93,7 +94,33 @@ class _InitialPageState extends State<InitialPage> {
                         _amountController.text,
                         "0",
                         _mobileNumberController.text);
-                    String? response = await ussdQuery(query);
+                    String? response = await ussdQuery(query).then(
+                      (value) {
+                        showCupertinoModalPopup(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return CupertinoAlertDialog(
+                                title: Text("Confirmation"),
+                                content: Text(value!),
+                                actions: [
+                                  CupertinoDialogAction(
+                                    child: Text("No"),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                  CupertinoDialogAction(
+                                    child: Text("Yes"),
+                                    onPressed: () {
+                                      Navigator.of(context)
+                                          .popUntil((route) => route.isFirst);
+                                    },
+                                  ),
+                                ],
+                              );
+                            });
+                      },
+                    );
 
                     setState(() {
                       responseMessage = response;

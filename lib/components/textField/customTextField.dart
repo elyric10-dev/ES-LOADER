@@ -7,16 +7,19 @@ class CustomTextField extends StatelessWidget {
     required this.controller,
     required this.color,
     required this.hint,
+    this.onChange,
   }) : super(key: key);
 
   final TextEditingController controller;
   final Color color;
   final String hint;
+  final void Function(String)? onChange;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      onChanged: onChange,
       keyboardType: TextInputType.number,
       inputFormatters: <TextInputFormatter>[
         FilteringTextInputFormatter.allow(

@@ -1,6 +1,9 @@
-import 'package:es_loader/pages/homepage/components/screen/enterPhoneNumber/enterMobileNumberPage.dart';
+import 'package:es_loader/pages/initialPage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:es_loader/components/button/customButton.dart';
+import 'package:es_loader/components/textField/customTextField.dart';
+import 'package:ussd_advanced/ussd_advanced.dart';
 
 class NetworkGrid extends StatefulWidget {
   NetworkGrid({
@@ -14,6 +17,14 @@ class NetworkGrid extends StatefulWidget {
 }
 
 class _NetworkGridState extends State<NetworkGrid> {
+  final TextEditingController _mobileNumberController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _insertCoinController = TextEditingController();
+
+  bool _isReview = false;
+  bool _isLoading = false;
+  bool _isDoneInserting = false;
+
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -30,7 +41,7 @@ class _NetworkGridState extends State<NetworkGrid> {
           // CLICKING NETWORKS
           return GestureDetector(
             onTap: () {
-              EnterMobileNumberPage(context, item);
+              modalBottom(context, item);
             },
             child: Container(
               margin: const EdgeInsets.all(8.0),
@@ -60,4 +71,324 @@ class _NetworkGridState extends State<NetworkGrid> {
       ),
     );
   }
+
+  Future<dynamic> modalBottom(BuildContext context, Map<String, dynamic> item) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      builder: (BuildContext context) {
+        final String mobileNumber = _mobileNumberController.text;
+        final String amount = _amountController.text;
+        final String insertCoin = _insertCoinController.text;
+        int? insertedCoin;
+        bool filledUpInput() {
+          return (mobileNumber.length == 11 && amount.isNotEmpty)
+              ? true
+              : false;
+        }
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              _isReview
+                  ? "Please Review and Insert coin or bill if ready"
+                  : item['title'],
+              style: const TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            centerTitle: true,
+            backgroundColor: item['color'],
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+          body: SingleChildScrollView(
+            child: Container(
+                height: MediaQuery.of(context).size.height,
+                color: Colors.white,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              left: 250.0,
+                              right: 250.0,
+                              top: 30.0,
+                              bottom: 0.0,
+                            ),
+                            child: _isReview
+                                ? Text(
+                                    "Mobile number: $mobileNumber",
+                                    style: const TextStyle(
+                                      fontSize: 23,
+                                    ),
+                                  )
+                                : CustomTextField(
+                                    controller: _mobileNumberController,
+                                    color: item['color'],
+                                    hint: "09xxxxxxxxx",
+                                  ),
+                          ),
+                          Padding(
+                              padding: const EdgeInsets.only(
+                                left: 250.0,
+                                right: 250.0,
+                                top: 15.0,
+                                bottom: 30.0,
+                              ),
+                              child: (!item['forSimLoad'])
+                                  ? _isReview
+                                      ? Text(
+                                          "Amount: P$amount.00",
+                                          style: const TextStyle(
+                                            fontSize: 23,
+                                          ),
+                                        )
+                                      : CustomTextField(
+                                          controller: _amountController,
+                                          color: item['color'],
+                                          hint: "Amount",
+                                        )
+                                  : Container()),
+                          _isReview
+                              ? Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 250.0,
+                                  ),
+                                  child: CustomTextField(
+                                      controller: _insertCoinController,
+                                      onChange: (value) {
+                                        if (value.isEmpty) {
+                                          insertedCoin = null;
+                                        } else {
+                                          insertedCoin = int.tryParse(value);
+                                        }
+                                        print(insertedCoin);
+                                        if (insertedCoin != null &&
+                                            insertedCoin! >=
+                                                int.parse(amount)) {
+                                          setState(() {
+                                            _isLoading = false;
+                                          });
+                                        } else {
+                                          setState(() {
+                                            _isLoading = true;
+                                          });
+                                        }
+                                      },
+                                      color: item['color'],
+                                      hint: "Insert Coin"),
+                                )
+                              : Container(),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * .42,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(15),
+                              child: Image.asset(
+                                item['logo'],
+                              ),
+                            ),
+                          ),
+                          Padding(
+                              padding: const EdgeInsets.only(top: 30.0),
+                              child: (item['forSimLoad'])
+                                  // FOR REGULAR AND PROMO
+                                  ? Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              right: 50.0),
+                                          child: CustomButton(
+                                            title: const Text(
+                                              "Regular",
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                              ),
+                                            ),
+                                            backgroundColor: item['color'],
+                                            onPressed: () {
+                                              print("REGULAR");
+                                            },
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 50.0),
+                                          child: CustomButton(
+                                            title: const Text(
+                                              "Promo",
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                              ),
+                                            ),
+                                            backgroundColor: item['color'],
+                                            onPressed: () {
+                                              print("PROMO");
+                                            },
+                                          ),
+                                        )
+                                      ],
+                                    )
+                                  : !_isReview
+                                      ? CustomButton(
+                                          title: const Text(
+                                            "Review",
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                            ),
+                                          ),
+                                          backgroundColor: filledUpInput()
+                                              ? item['color']
+                                              : Colors.grey,
+                                          onPressed: () {
+                                            filledUpInput()
+                                                ? setState(() {
+                                                    _isReview = true;
+                                                    _isLoading = true;
+                                                    modalBottom(context, item);
+                                                  })
+                                                : '';
+                                          },
+                                        )
+                                      : _isReview
+                                          ? _isLoading
+                                              ? const SizedBox(
+                                                  height: 20,
+                                                  width: 20,
+                                                  child:
+                                                      CircularProgressIndicator())
+                                              : CustomButton(
+                                                  title: const Text(
+                                                    "Cash In",
+                                                    style: TextStyle(
+                                                      fontSize: 20,
+                                                    ),
+                                                  ),
+                                                  backgroundColor:
+                                                      item['color'],
+                                                  onPressed: () async {
+                                                    setState(() {
+                                                      _isReview = true;
+                                                      _isLoading = true;
+                                                      modalBottom(
+                                                          context, item);
+                                                    });
+                                                    String? response =
+                                                        "Thank you for using ES-Loader, please comeback again :)";
+
+                                                    try {
+                                                      String query = dialNumbers
+                                                          .sendGcashToGcash(
+                                                              _amountController
+                                                                  .text,
+                                                              "0",
+                                                              _mobileNumberController
+                                                                  .text);
+                                                      await ussdQuery(query)
+                                                          .then(
+                                                        (value) {
+                                                          setState(() {
+                                                            _isReview = true;
+                                                            _isLoading = true;
+                                                            modalBottom(
+                                                                context, item);
+                                                          });
+                                                          showCupertinoModalPopup(
+                                                            context: context,
+                                                            builder:
+                                                                (BuildContext
+                                                                    context) {
+                                                              return CupertinoAlertDialog(
+                                                                title:
+                                                                    const Text(
+                                                                  "Confirmation",
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize:
+                                                                        23,
+                                                                  ),
+                                                                ),
+                                                                content: Text(
+                                                                  response,
+                                                                  style:
+                                                                      const TextStyle(
+                                                                    fontSize:
+                                                                        18,
+                                                                  ),
+                                                                ),
+                                                                actions: [
+                                                                  CupertinoDialogAction(
+                                                                    child:
+                                                                        const Text(
+                                                                      "Okay",
+                                                                      style:
+                                                                          TextStyle(
+                                                                        fontSize:
+                                                                            19,
+                                                                      ),
+                                                                    ),
+                                                                    onPressed:
+                                                                        () {
+                                                                      Navigator.of(
+                                                                              context)
+                                                                          .popUntil((route) =>
+                                                                              route.isFirst);
+                                                                    },
+                                                                  ),
+                                                                ],
+                                                              );
+                                                            },
+                                                          );
+                                                        },
+                                                      );
+
+                                                      print(response);
+                                                    } catch (e) {
+                                                      print(e);
+                                                    } finally {
+                                                      setState(() {
+                                                        _isLoading = false;
+                                                        _isReview = false;
+                                                        _isDoneInserting = true;
+                                                        _mobileNumberController
+                                                            .text = '';
+                                                        _amountController.text =
+                                                            '';
+                                                        _insertCoinController
+                                                            .text = '';
+                                                      });
+                                                    }
+                                                  },
+                                                )
+                                          : const SizedBox(
+                                              height: 20,
+                                              width: 20,
+                                              child:
+                                                  CircularProgressIndicator())),
+                        ],
+                      ),
+                    ),
+                  ],
+                )),
+          ),
+        );
+      },
+    );
+  }
+}
+
+Future<String?> ussdQuery(String code) async {
+  String? response = await UssdAdvanced.sendAdvancedUssd(
+    code: code,
+    subscriptionId: 1,
+  );
+  return response;
 }
