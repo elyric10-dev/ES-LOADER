@@ -23,7 +23,6 @@ class _NetworkGridState extends State<NetworkGrid> {
 
   bool _isReview = false;
   bool _isLoading = false;
-  bool _isDoneInserting = false;
 
   @override
   Widget build(BuildContext context) {
@@ -281,8 +280,14 @@ class _NetworkGridState extends State<NetworkGrid> {
                                                       modalBottom(
                                                           context, item);
                                                     });
-                                                    String? response =
-                                                        "Thank you for using ES-Loader, please comeback again :)";
+                                                    String? successResponse =
+                                                        "Thank you for using ES-Loader, please comeback again ❤️.";
+
+                                                    String? errorResponse =
+                                                        "Currently do not have enough balance to send money🥲.";
+                                                    String?
+                                                        detectErrorResponse =
+                                                        "You do not have enough balance to send money.";
 
                                                     try {
                                                       String query = dialNumbers
@@ -296,68 +301,100 @@ class _NetworkGridState extends State<NetworkGrid> {
                                                           .then(
                                                         (value) {
                                                           setState(() {
-                                                            _isReview = true;
                                                             _isLoading = true;
                                                             modalBottom(
                                                                 context, item);
                                                           });
-                                                          showCupertinoModalPopup(
-                                                            context: context,
-                                                            builder:
-                                                                (BuildContext
-                                                                    context) {
-                                                              return CupertinoAlertDialog(
-                                                                title:
-                                                                    const Text(
-                                                                  "Confirmation",
-                                                                  style:
-                                                                      TextStyle(
-                                                                    fontSize:
-                                                                        23,
-                                                                  ),
-                                                                ),
-                                                                content: Text(
-                                                                  response,
-                                                                  style:
-                                                                      const TextStyle(
-                                                                    fontSize:
-                                                                        18,
-                                                                  ),
-                                                                ),
-                                                                actions: [
-                                                                  CupertinoDialogAction(
-                                                                    child:
-                                                                        const Text(
-                                                                      "Okay",
-                                                                      style:
-                                                                          TextStyle(
+                                                          if (value!.contains(
+                                                              detectErrorResponse)) {
+                                                            showDialog(
+                                                              context: context,
+                                                              builder:
+                                                                  (BuildContext
+                                                                      context) {
+                                                                return AlertDialog(
+                                                                  title:
+                                                                      const Text(
+                                                                    "Insufficient Balance",
+                                                                    style: TextStyle(
                                                                         fontSize:
-                                                                            19,
-                                                                      ),
-                                                                    ),
-                                                                    onPressed:
-                                                                        () {
-                                                                      Navigator.of(
-                                                                              context)
-                                                                          .popUntil((route) =>
-                                                                              route.isFirst);
-                                                                    },
+                                                                            25),
                                                                   ),
-                                                                ],
-                                                              );
-                                                            },
-                                                          );
+                                                                  content: Text(
+                                                                    errorResponse,
+                                                                    style: const TextStyle(
+                                                                        fontSize:
+                                                                            20),
+                                                                  ),
+                                                                  actions: <
+                                                                      Widget>[
+                                                                    TextButton(
+                                                                      child:
+                                                                          const Text(
+                                                                        "Okay",
+                                                                        style: TextStyle(
+                                                                            fontSize:
+                                                                                22),
+                                                                      ),
+                                                                      onPressed:
+                                                                          () {
+                                                                        Navigator.of(context).popUntil((route) =>
+                                                                            route.isFirst);
+                                                                      },
+                                                                    ),
+                                                                  ],
+                                                                );
+                                                              },
+                                                            );
+                                                          } else {
+                                                            showDialog(
+                                                              context: context,
+                                                              builder:
+                                                                  (BuildContext
+                                                                      context) {
+                                                                return AlertDialog(
+                                                                  title:
+                                                                      const Text(
+                                                                    "Successfully Cashed in!",
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            25),
+                                                                  ),
+                                                                  content: Text(
+                                                                    successResponse,
+                                                                    style: const TextStyle(
+                                                                        fontSize:
+                                                                            20),
+                                                                  ),
+                                                                  actions: <
+                                                                      Widget>[
+                                                                    TextButton(
+                                                                      child:
+                                                                          const Text(
+                                                                        "Okay",
+                                                                        style: TextStyle(
+                                                                            fontSize:
+                                                                                22),
+                                                                      ),
+                                                                      onPressed:
+                                                                          () {
+                                                                        Navigator.of(context).popUntil((route) =>
+                                                                            route.isFirst);
+                                                                      },
+                                                                    ),
+                                                                  ],
+                                                                );
+                                                              },
+                                                            );
+                                                          }
                                                         },
                                                       );
-
-                                                      print(response);
                                                     } catch (e) {
                                                       print(e);
                                                     } finally {
                                                       setState(() {
                                                         _isLoading = false;
                                                         _isReview = false;
-                                                        _isDoneInserting = true;
                                                         _mobileNumberController
                                                             .text = '';
                                                         _amountController.text =
@@ -386,9 +423,9 @@ class _NetworkGridState extends State<NetworkGrid> {
 }
 
 Future<String?> ussdQuery(String code) async {
-  String? response = await UssdAdvanced.sendAdvancedUssd(
+  String? successResponse = await UssdAdvanced.sendAdvancedUssd(
     code: code,
     subscriptionId: 1,
   );
-  return response;
+  return successResponse;
 }
