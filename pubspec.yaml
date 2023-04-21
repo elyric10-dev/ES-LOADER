@@ -38,6 +38,8 @@ dependencies:
   ussd_advanced: ^1.0.0
   cached_network_image: ^3.2.3
   blinking_text: ^1.0.2
+  sqflite: ^2.2.6
+  path_provider: ^2.0.14
   # kiosk_mode: ^0.3.0+1
 
 dev_dependencies:
